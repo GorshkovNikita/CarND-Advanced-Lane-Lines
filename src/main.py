@@ -9,7 +9,8 @@ if __name__ == '__main__':
         c. Warp this gradient map. Returns binary image
         d. Find lanes using window method (I prefer method with np.convolve). Returns lane pixels
         e. Fit pixels to polynomial of the second degree
-        f. Calculate the radius of curvature and position of vehicle with respect to center
+        f. Calculate the radius of curvature and position of vehicle with respect to the center of the lane
         j. Plot lines on image
+      3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
     calibration.some_func()
