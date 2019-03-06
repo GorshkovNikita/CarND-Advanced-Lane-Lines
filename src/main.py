@@ -1,3 +1,4 @@
+from edges_detection import detect_edges
 from calibration import calibrate
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -6,6 +7,7 @@ import cv2
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
+    # edges_binary_img = detect_edges(undistorted_img)
     return undistorted_img
 
 
