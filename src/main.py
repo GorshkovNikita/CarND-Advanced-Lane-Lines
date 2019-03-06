@@ -1,4 +1,13 @@
-import calibration
+from calibration import calibrate
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+import cv2
+
+
+def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
+    undistorted_img = cv2.undistort(frame_img, mtx, dst)
+    return undistorted_img
+
 
 if __name__ == '__main__':
     """
@@ -13,4 +22,9 @@ if __name__ == '__main__':
         j. Plot lines on image
       3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
-    calibration.some_func()
+    mtx, dst = calibrate()
+    img = mpimg.imread('./../test_images/test1.jpg')
+    processed_frame = process_frame(img)
+    plt.imshow(processed_frame)
+    plt.show()
+
