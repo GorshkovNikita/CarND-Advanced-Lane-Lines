@@ -14,7 +14,7 @@ def sobel_binary(image, thresh=(20, 100)):
     return binary
 
 
-def hls_binary(image, thresh=(170, 255), axis=2):
+def hls_binary(image, thresh=(140, 255), axis=2):
     hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
     channel = hls[:, :, axis]
     binary = np.zeros_like(channel, dtype=float)
@@ -37,4 +37,5 @@ if __name__ == '__main__':
     # stacked_img = np.uint8(np.dstack((np.zeros_like(s_binary), s_binary, sobel_binary)) * 255)
     # plt.imshow(stacked_img)
     plt.imshow(detect_edges(img), cmap='gray')
+    # plt.imshow(img)
     plt.show()

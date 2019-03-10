@@ -1,15 +1,19 @@
-from edges_detection import detect_edges
-from calibration import calibrate
-from warper import warp
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+import os
+
 import cv2
+import matplotlib.image as mpimg
+import matplotlib.pyplot as plt
+
+from calibration import calibrate
+from edges_detection import detect_edges
+from warper import warp
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     edges_binary_img = detect_edges(undistorted_img)
-    return warp(edges_binary_img)
+    warped_image = warp(edges_binary_img)
+    return warped_image
 
 
 if __name__ == '__main__':
@@ -26,8 +30,12 @@ if __name__ == '__main__':
       3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
     mtx, dst = calibrate()
-    img = mpimg.imread('./../test_images/straight_lines2.jpg')
-    processed_frame = process_frame(img)
-    plt.imshow(processed_frame, cmap='gray')
-    plt.show()
+    dir = './../test_images/'
+    out_dir = './../out_binary_images/'
+    for img_name in os.listdir(dir):
+        img = mpimg.imread(dir + img_name)
+        processed_frame = process_frame(img)
+        mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
+    # plt.imshow(processed_frame, cmap='gray')
+    # plt.show()
 
