@@ -43,25 +43,32 @@ def find_line_pixels(img):
         # find convolution of the same length as image layer
         conv_signal = np.convolve(window, layer_pixels, mode='same')
 
+        # find indices for search area
         left_min_index = max(l_center - margin, 0)
         left_max_index = min(l_center + margin, image_width)
 
         right_min_index = max(r_center - margin, 0)
         right_max_index = min(r_center + margin, image_width)
 
+        # find index with maximum neighbouring pixels in search area
         l_center = np.argmax(conv_signal[left_min_index:left_max_index]) + left_min_index
         r_center = np.argmax(conv_signal[right_min_index:right_max_index]) + right_min_index
-        # если вообще не найдено ни одного пикселя, или меньше какого-то порога,
-        # нужно это проверять и не добавлять наверно в центроиды или добавить что-то типа (-1, -1)
+
+        # todo: если вообще не найдено ни одного пикселя, или меньше какого-то порога,
+        # todo: нужно это проверять и не добавлять наверно в центроиды или добавить что-то типа (-1, -1)
         window_centroids.append((l_center, r_center))
+
+        # find activated indices inside window
         l_pixels = np.nonzero(cv2.bitwise_and(img, window_mask(img, layer, window_width, window_height, l_center)))
         r_pixels = np.nonzero(cv2.bitwise_and(img, window_mask(img, layer, window_width, window_height, r_center)))
+
+        # add these indices to resulting array of all indices of corresponding line
         left_line_x_pixel_indexes = np.concatenate((left_line_x_pixel_indexes, l_pixels[0]))
         left_line_y_pixel_indexes = np.concatenate((left_line_y_pixel_indexes, l_pixels[1]))
         right_line_x_pixel_indexes = np.concatenate((right_line_x_pixel_indexes, r_pixels[0]))
         right_line_y_pixel_indexes = np.concatenate((right_line_y_pixel_indexes, r_pixels[1]))
 
-    # return tuple of tuples with indexes (x, y) of indexes of line pixels
+    # return tuple of tuples with indices (x, y) of indexes of line pixels
     return (left_line_x_pixel_indexes, left_line_y_pixel_indexes), (right_line_x_pixel_indexes, right_line_y_pixel_indexes)
 
 
