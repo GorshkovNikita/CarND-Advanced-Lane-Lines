@@ -1,5 +1,4 @@
 import os
-
 import cv2
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
@@ -7,12 +6,16 @@ import matplotlib.pyplot as plt
 from calibration import calibrate
 from edges_detection import detect_edges
 from warper import warp
+from finding_lines import find_line_pixels
+from line_fitting import fit_lines
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     edges_binary_img = detect_edges(undistorted_img)
     warped_image = warp(edges_binary_img)
+    # left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
+    # left_fit_x, right_fit_x, ploty = fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
     return warped_image
 
 

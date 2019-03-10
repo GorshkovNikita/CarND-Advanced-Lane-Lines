@@ -74,7 +74,7 @@ def find_line_pixels(img):
 
 
 if __name__ == '__main__':
-    filename = 'straight_lines2'
+    filename = 'test7'
     image = np.rint(cv2.imread('./../out_binary_images/' + filename + '.jpg', 0) / 255).astype(int)
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(image)
     import pickle
