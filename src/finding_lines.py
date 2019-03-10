@@ -68,14 +68,18 @@ def find_line_pixels(img):
         right_line_x_pixel_indexes = np.concatenate((right_line_x_pixel_indexes, r_pixels[0]))
         right_line_y_pixel_indexes = np.concatenate((right_line_y_pixel_indexes, r_pixels[1]))
 
-    # return tuple of tuples with indices (x, y) of indexes of line pixels
-    return (left_line_x_pixel_indexes, left_line_y_pixel_indexes), (right_line_x_pixel_indexes, right_line_y_pixel_indexes)
+    # return tuple of tuples with indices (x, y) of line pixels
+    return (left_line_x_pixel_indexes, left_line_y_pixel_indexes),\
+           (right_line_x_pixel_indexes, right_line_y_pixel_indexes)
 
 
 if __name__ == '__main__':
-    image = np.rint(cv2.imread('./../out_binary_images/test6.jpg', 0) / 255).astype(int)
-    print(image.shape)
+    filename = 'straight_lines2'
+    image = np.rint(cv2.imread('./../out_binary_images/' + filename + '.jpg', 0) / 255).astype(int)
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(image)
+    import pickle
+    f = open('./../output_lines_pixels/' + filename, 'wb')
+    pickle.dump((left_line_pixel_indexes, right_line_pixel_indexes), f, protocol=0)
     scaled = np.uint8(255 * image / np.max(image))
     output_image = np.stack((scaled, scaled, scaled), axis=2)
     output_image[left_line_pixel_indexes[0], left_line_pixel_indexes[1], :] = [255, 0, 0]
