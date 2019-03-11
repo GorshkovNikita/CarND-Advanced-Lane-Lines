@@ -4,12 +4,19 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 
 
-def warp(image):
-    # https://www.image-map.net/
-    src = np.float32([[210, 718], [601,448], [680,446], [1106,718]])
+def rotation_matrix(inv=False):
+    # it is possible to cache it for efficiency
+    src = np.float32([[210, 718], [601, 448], [680, 446], [1106, 718]])
     dst = np.float32([[250, 720], [250, 0], [1000, 0], [1000, 720]])
-    m = cv2.getPerspectiveTransform(src, dst)
-    return np.rint(cv2.warpPerspective(image, m, (1280, 720))).astype(int)
+    if inv:
+        return cv2.getPerspectiveTransform(dst, src)
+    else:
+        return cv2.getPerspectiveTransform(src, dst)
+
+
+def warp(image, m):
+    # https://www.image-map.net/
+    return np.rint(cv2.warpPerspective(image, m, (image.shape[1], image.shape[0]))).astype(int), m_inv
 
 
 if __name__ == '__main__':
@@ -17,10 +24,7 @@ if __name__ == '__main__':
     img = mpimg.imread('./../test_images/test5.jpg')
     # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
     edges = detect_edges(img)
-    print(np.unique(edges))
-    warped_img = warp(edges)
-    print(warped_img.shape)
-    print(type(warped_img))
-    print(np.unique(np.rint(warped_img)))
-    plt.imshow(np.rint(warped_img), cmap='gray')
+    m = rotation_matrix()
+    warped_img = warp(edges, m)
+    plt.imshow(warped_img, cmap='gray')
     plt.show()

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 from calibration import calibrate
 from edges_detection import detect_edges
-from warper import warp
+from warper import warp, rotation_matrix
 from finding_lines import find_line_pixels
 from line_fitting import fit_lines
 
@@ -13,7 +13,9 @@ from line_fitting import fit_lines
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     edges_binary_img = detect_edges(undistorted_img)
-    warped_image = warp(edges_binary_img)
+    m, m_inv = rotation_matrix()
+    warped_image = warp(edges_binary_img, m)
+    print(m_inv)
     # left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
     # left_fit_x, right_fit_x, ploty = fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
     return warped_image
@@ -36,6 +38,7 @@ if __name__ == '__main__':
     dir = './../test_images/'
     out_dir = './../out_binary_images/'
     for img_name in os.listdir(dir):
+        print(img_name)
         img = mpimg.imread(dir + img_name)
         processed_frame = process_frame(img)
         mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
