@@ -37,7 +37,7 @@ def find_line_pixels(img):
     r_center = np.argmax(np.convolve(window, right_pixels, mode='same')) + int(image_width / 2)
 
     for layer in range(0, nwindows):
-        image_layer = image[int(image_height - (layer + 1) * window_height) : int(image_height - layer * window_height), :]
+        image_layer = img[int(image_height - (layer + 1) * window_height) : int(image_height - layer * window_height), :]
         # number of activated pixels for each coordinate in image layer
         layer_pixels = np.sum(image_layer, axis=0)
         # find convolution of the same length as image layer

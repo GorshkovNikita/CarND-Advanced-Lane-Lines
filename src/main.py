@@ -7,18 +7,19 @@ from calibration import calibrate
 from edges_detection import detect_edges
 from warper import warp, rotation_matrix
 from finding_lines import find_line_pixels
-from line_fitting import fit_lines
+from line_fitting import fit_lines, plot_lines
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     edges_binary_img = detect_edges(undistorted_img)
-    m, m_inv = rotation_matrix()
+    m = rotation_matrix()
     warped_image = warp(edges_binary_img, m)
-    print(m_inv)
-    # left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
-    # left_fit_x, right_fit_x, ploty = fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
-    return warped_image
+    left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
+    left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
+        fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
+    source_image_with_lines = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
+    return source_image_with_lines
 
 
 if __name__ == '__main__':
@@ -36,12 +37,12 @@ if __name__ == '__main__':
     """
     mtx, dst = calibrate()
     dir = './../test_images/'
-    out_dir = './../out_binary_images/'
+    out_dir = './../out_images_with_lines/'
     for img_name in os.listdir(dir):
         print(img_name)
         img = mpimg.imread(dir + img_name)
         processed_frame = process_frame(img)
-        mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
-    # plt.imshow(processed_frame, cmap='gray')
-    # plt.show()
+        mpimg.imsave(out_dir + img_name, processed_frame)
+        plt.imshow(processed_frame)
+        plt.show()
 
