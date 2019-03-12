@@ -6,29 +6,35 @@ from moviepy.editor import *
 
 from calibration import calibrate
 from thresholding import thresholded_binary_image
-from warper import warp, rotation_matrix
+from warper import warp_and_sharpen, rotation_matrix
 from finding_lines import find_line_pixels
-from line_fitting import fit_lines, plot_lines, curve_radius
+from line_fitting import fit_lines, plot_lines, curve_radius, offset_from_center
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     thresholded_binary_img = thresholded_binary_image(undistorted_img)
     m = rotation_matrix()
-    warped_image = warp(thresholded_binary_img, m)
+    warped_image = warp_and_sharpen(thresholded_binary_img, m)
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
-    curve_rad = curve_radius(left_fit, right_fit, ploty)
+    curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
+    offset = offset_from_center(warped_image.shape, left_fit, right_fit)
     source_image_with_lines = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
     cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
+                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                )
+    side = 'left' if offset < 0 else 'right'
+    offset_text = 'Vehicle is ' + str(abs(round(offset, ndigits=2))) + '(m) ' + side + ' of center'
+    cv2.putText(source_image_with_lines, offset_text, (50, 100),
                 cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
                 )
     return source_image_with_lines
 
 
 def process_video(process_image):
-    filename = 'cut_project_video'
+    filename = 'project_video'
     white_output = './../output_videos/' + filename + '.mp4'
     clip = VideoFileClip('./../' + filename + '.mp4')
     white_clip = clip.fl_image(process_image)
@@ -56,14 +62,14 @@ if __name__ == '__main__':
       3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
     mtx, dst = calibrate()
-    cut_video(38, 43)
+    # cut_video(38, 43)
     process_video(process_frame)
     # dir = './../test_images/'
-    # out_dir = './../out_images_with_lines/'
+    # out_dir = './../out_binary_images/'
     # for img_name in os.listdir(dir):
     #     print(img_name)
     #     img = mpimg.imread(dir + img_name)
     #     processed_frame = process_frame(img)
-    #     mpimg.imsave(out_dir + img_name, processed_frame)
+    #     mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
     #     plt.imshow(processed_frame)
     #     plt.show()

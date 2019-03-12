@@ -9,22 +9,33 @@ mx = 3.7 / 700  # meters per pixel in x dimension
 
 
 def fit_lines(img_shape, left_line_pixel_indices, right_line_pixel_indices):
+    l_fit_coef = np.polyfit(left_line_pixel_indices[0], left_line_pixel_indices[1], 2)
+    r_fit_coef = np.polyfit(right_line_pixel_indices[0], right_line_pixel_indices[1], 2)
+    print((l_fit_coef, r_fit_coef))
+    y = np.linspace(0, img_shape[0] - 1, img_shape[0])
+
+    l_fit_x = l_fit_coef[0] * y ** 2 + l_fit_coef[1] * y + l_fit_coef[2]
+    r_fit_x = r_fit_coef[0] * y ** 2 + r_fit_coef[1] * y + r_fit_coef[2]
+
+    return l_fit_x, r_fit_x, y, l_fit_coef, r_fit_coef
+
+
+def curve_radius(left_line_pixel_indices, right_line_pixel_indices):
+    y_val = np.max(left_line_pixel_indices[0])
     l_fit = np.polyfit(left_line_pixel_indices[0] * my, left_line_pixel_indices[1] * mx, 2)
     r_fit = np.polyfit(right_line_pixel_indices[0] * my, right_line_pixel_indices[1] * mx, 2)
-    y = np.linspace(0, img_shape[0] - 1, img_shape[0]) * my
-
-    l_fit_x = l_fit[0] * y ** 2 + l_fit[1] * y + l_fit[2]
-    r_fit_x = r_fit[0] * y ** 2 + r_fit[1] * y + r_fit[2]
-
-    # in order to display these lines on source image i need to unwarp it
-    return l_fit_x / mx, r_fit_x / mx, y, l_fit, r_fit
-
-
-def curve_radius(l_fit, r_fit, y):
-    y_val = np.max(y)
-    left_curve_radius = ((1 + (2 * l_fit[0] * y_val + l_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * l_fit[0])
-    right_curve_radius = ((1 + (2 * r_fit[0] * y_val + r_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * r_fit[0])
+    left_curve_radius = ((1 + (2 * l_fit[0] * y_val * my + l_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * l_fit[0])
+    right_curve_radius = ((1 + (2 * r_fit[0] * y_val * my + r_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * r_fit[0])
     return (left_curve_radius + right_curve_radius) / 2
+
+
+def offset_from_center(img_shape, l_fit, r_fit):
+    # take x position of lines on image on the edge
+    left_x = l_fit[0] * (img_shape[0] - 1) ** 2 + l_fit[1] * (img_shape[0] - 1) + l_fit[2]
+    right_x = r_fit[0] * (img_shape[0] - 1) ** 2 + r_fit[1] * (img_shape[0] - 1) + r_fit[2]
+    ideal_car_center = np.abs(left_x) + ((img_shape[1] - (np.abs(right_x) - np.abs(left_x))) / 2)
+    real_car_center = (img_shape[1] / 2)
+    return (real_car_center - ideal_car_center) * mx
 
 
 def plot_lines(src_img, l_fit_x, r_fit_x, y):
@@ -37,11 +48,13 @@ def plot_lines(src_img, l_fit_x, r_fit_x, y):
     left_indices = np.where(left_x < src_img.shape[1])[0]
     left_filtered_x = left_x[left_indices]
 
-    left_pts = np.dstack((left_filtered_x, np.array(y / my).astype(int)[left_indices]))[0]
-    right_pts = np.dstack((right_filtered_x, np.array(y / my).astype(int)[right_indices]))[0]
+    left_pts = np.dstack((left_filtered_x, np.array(y).astype(int)[left_indices]))[0]
+    right_pts = np.dstack((right_filtered_x, np.array(y).astype(int)[right_indices]))[0]
 
     image_with_curves = np.zeros_like(src_img)
     cv2.polylines(image_with_curves, np.array([left_pts, right_pts]), False, [255, 0, 0], thickness=25)
+    # todo: draw green area
+    # cv2.fillPoly(image_with_curves, np.array([left_pts, right_pts]), [0, 255, 0])
     warped = cv2.warpPerspective(image_with_curves, m_inv, (src_img.shape[1], src_img.shape[0]))
     return cv2.addWeighted(src_img, 1.0, warped, 0.7, 1.0)
 
@@ -53,10 +66,14 @@ if __name__ == '__main__':
     image = mpimg.imread('./../out_binary_images/' + filename + '.jpg')
     f = open('./../output_lines_pixels/' + filename, 'rb')
     left_pixel_indices, right_pixel_indices = pickle.load(f)
-    left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
+    left_fit_x, right_fit_x, ploty, left_fit_coef, right_fit_coef = \
         fit_lines(image.shape, left_pixel_indices, right_pixel_indices)
-    print(curve_radius(left_fit, right_fit, ploty))
+    print(curve_radius(left_pixel_indices, right_pixel_indices))
+    print(offset_from_center(image.shape, left_fit_coef, right_fit_coef))
 
     source_image = mpimg.imread('./../test_images/' + filename + '.jpg')
     plt.imshow(plot_lines(source_image, left_fit_x, right_fit_x, ploty))
+    # plt.plot(left_fit_x, ploty, color='red')
+    # plt.plot(right_fit_x, ploty, color='red')
+    # plt.imshow(image, cmap='gray')
     plt.show()

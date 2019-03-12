@@ -18,11 +18,12 @@ The goals / steps of this project are the following:
 [image1]: ./examples/undistorted_image.png "Undistorted"
 [image2]: ./test_images/test1.jpg "Road Transformed"
 [image3]: ./examples/binary_example.png "Binary Example"
-[image4]: ./examples/warped_straight_lines.jpg "Warp Example"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
+[image4]: ./examples/warped_with_area.png "Warp Example"
+[image5]: ./examples/fitted_polynomial.png "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [image7]: ./examples/distorted_image.png "Distorted"
 [image8]: ./examples/road_undistorted.png "Road undistorted"
+[image9]: ./examples/source_image_with_area.png "Source image with area"
 [video1]: ./project_video.mp4 "Video"
 
 
@@ -76,10 +77,11 @@ Here's an example of my output for this step.
 ![alt text][image3]
 
 #### 3. Describe how (and identify where in your code) you performed a perspective transform and provide an example of a transformed image.
-# TODO!!
-The code for my perspective transform includes a function called `warp()`, which appears in lines 17 through 19, 
-and a funcation called `rotation_matrix()` in the file `warper.py`. 
-The `warp()` function takes as inputs an image (`img`), as well as source (`src`) and destination (`dst`) points. 
+The code for my perspective transform includes a function called `warp()`, which appears in lines 18 through 19, 
+a function called `warp_and_sharpen()` and a funcation called `rotation_matrix()` in the file `warper.py`. 
+The `warp()` function takes as inputs an image (`img`), as well as rotation matrix. After warping a binary image 
+becomes blurred and I use `warp_and_sharpen()` to sharpen this binary image. Function `rotation_martix()` is used for obtaining 
+rotation matrix based on source and destination points.
 I chose the hardcode the source and destination points in the following manner:
 
 | Source        | Destination   | 
@@ -93,6 +95,8 @@ I verified that my perspective transform was working as expected by drawing the 
 and its warped counterpart to verify that the lines appear parallel in the warped image.
 
 ![alt text][image4]
+
+![alt text][image9]
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
@@ -116,7 +120,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 #### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
 
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./output_videos/project_video.mp4)
 
 ---
 
