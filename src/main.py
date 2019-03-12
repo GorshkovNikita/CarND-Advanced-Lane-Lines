@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from moviepy.editor import *
 
 from calibration import calibrate
-from edges_detection import detect_edges
+from thresholding import thresholded_binary_image
 from warper import warp, rotation_matrix
 from finding_lines import find_line_pixels
 from line_fitting import fit_lines, plot_lines, curve_radius
@@ -13,9 +13,9 @@ from line_fitting import fit_lines, plot_lines, curve_radius
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
-    edges_binary_img = detect_edges(undistorted_img)
+    thresholded_binary_img = thresholded_binary_image(undistorted_img)
     m = rotation_matrix()
-    warped_image = warp(edges_binary_img, m)
+    warped_image = warp(thresholded_binary_img, m)
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
@@ -56,7 +56,7 @@ if __name__ == '__main__':
       3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
     mtx, dst = calibrate()
-    # cut_video(38, 40)
+    cut_video(38, 43)
     process_video(process_frame)
     # dir = './../test_images/'
     # out_dir = './../out_images_with_lines/'

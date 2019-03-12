@@ -16,15 +16,16 @@ def rotation_matrix(inv=False):
 
 def warp(image, m):
     # https://www.image-map.net/
-    return np.rint(cv2.warpPerspective(image, m, (image.shape[1], image.shape[0]))).astype(int)
+    # return np.rint(cv2.warpPerspective(image, m, (image.shape[1], image.shape[0]))).astype(int)
+    return cv2.warpPerspective(image, m, (image.shape[1], image.shape[0]))
 
 
 if __name__ == '__main__':
-    from edges_detection import detect_edges
-    img = mpimg.imread('./../test_images/test5.jpg')
+    from thresholding import thresholded_binary_image
+    img = mpimg.imread('./../test_images/straight_lines1.jpg')
     # gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-    edges = detect_edges(img)
+    # thresholded_image = thresholded_binary_image(img)
     m = rotation_matrix()
-    warped_img = warp(edges, m)
+    warped_img = warp(img, m)
     plt.imshow(warped_img, cmap='gray')
     plt.show()

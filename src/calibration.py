@@ -27,9 +27,11 @@ if __name__ == '__main__':
     # undistorted image test
     import matplotlib.pyplot as plt
     mtx, dst = calibrate()
-    image = cv2.imread('../camera_cal/calibration2.jpg')
+    image = mpimg.imread('../test_images/test1.jpg')
     plt.imshow(image)
+    plt.title('Distorted image')
     plt.show()
     undistorted_img = cv2.undistort(image, mtx, dst)
     plt.imshow(undistorted_img)
+    plt.title('Undistorted image')
     plt.show()
