@@ -4,7 +4,6 @@ import numpy as np
 import cv2
 from warper import rotation_matrix
 
-# todo: поднастроить
 my = 30 / 720  # meters per pixel in y dimension
 mx = 3.7 / 700  # meters per pixel in x dimension
 
@@ -25,7 +24,7 @@ def curve_radius(l_fit, r_fit, y):
     y_val = np.max(y)
     left_curve_radius = ((1 + (2 * l_fit[0] * y_val + l_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * l_fit[0])
     right_curve_radius = ((1 + (2 * r_fit[0] * y_val + r_fit[1]) ** 2) ** (3 / 2)) / np.absolute(2 * r_fit[0])
-    return left_curve_radius, right_curve_radius
+    return (left_curve_radius + right_curve_radius) / 2
 
 
 def plot_lines(src_img, l_fit_x, r_fit_x, y):

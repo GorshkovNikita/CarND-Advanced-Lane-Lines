@@ -2,12 +2,13 @@ import os
 import cv2
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
+from moviepy.editor import *
 
 from calibration import calibrate
 from edges_detection import detect_edges
 from warper import warp, rotation_matrix
 from finding_lines import find_line_pixels
-from line_fitting import fit_lines, plot_lines
+from line_fitting import fit_lines, plot_lines, curve_radius
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
@@ -18,8 +19,27 @@ def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
+    curve_rad = curve_radius(left_fit, right_fit, ploty)
     source_image_with_lines = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
+    cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
+                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                )
     return source_image_with_lines
+
+
+def process_video(process_image):
+    filename = 'cut_project_video'
+    white_output = './../output_videos/' + filename + '.mp4'
+    clip = VideoFileClip('./../' + filename + '.mp4')
+    white_clip = clip.fl_image(process_image)
+    white_clip.write_videofile(white_output, audio=False)
+
+
+def cut_video(start_second, end_second):
+    filename = 'project_video'
+    clip = VideoFileClip('./../' + filename + '.mp4')
+    cut_clip = clip.subclip(start_second, end_second)
+    cut_clip.write_videofile('./../hard_cut_' + filename + '.mp4')
 
 
 if __name__ == '__main__':
@@ -36,13 +56,14 @@ if __name__ == '__main__':
       3. Use described pipeline for video. Note that you need to use previously computed data for new frame (optional).
     """
     mtx, dst = calibrate()
-    dir = './../test_images/'
-    out_dir = './../out_images_with_lines/'
-    for img_name in os.listdir(dir):
-        print(img_name)
-        img = mpimg.imread(dir + img_name)
-        processed_frame = process_frame(img)
-        mpimg.imsave(out_dir + img_name, processed_frame)
-        plt.imshow(processed_frame)
-        plt.show()
-
+    # cut_video(38, 40)
+    process_video(process_frame)
+    # dir = './../test_images/'
+    # out_dir = './../out_images_with_lines/'
+    # for img_name in os.listdir(dir):
+    #     print(img_name)
+    #     img = mpimg.imread(dir + img_name)
+    #     processed_frame = process_frame(img)
+    #     mpimg.imsave(out_dir + img_name, processed_frame)
+    #     plt.imshow(processed_frame)
+    #     plt.show()
