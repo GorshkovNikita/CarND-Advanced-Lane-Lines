@@ -58,6 +58,11 @@ def plot_lines(src_img, l_fit_x, r_fit_x, y):
     return cv2.addWeighted(src_img, 1.0, warped, 0.7, 1.0), offset
 
 
+def check_parallel(left_fit_x, right_fit_x):
+    diff = right_fit_x - left_fit_x
+    return abs(np.max(diff) - np.min(diff)) < 250
+
+
 if __name__ == '__main__':
     import pickle
     filename = 'test7'
@@ -66,10 +71,11 @@ if __name__ == '__main__':
     left_pixel_indices, right_pixel_indices = pickle.load(f)
     left_fit_x, right_fit_x, ploty, left_fit_coef, right_fit_coef = \
         fit_lines(image.shape, left_pixel_indices, right_pixel_indices)
-    print(curve_radius(left_pixel_indices, right_pixel_indices))
+    print(check_parallel(left_fit_x, right_fit_x))
+    curve_rad = curve_radius(left_pixel_indices, right_pixel_indices)
+    # print(curve_rad)
 
     source_image = mpimg.imread('./../test_images/' + filename + '.jpg')
-    curve_rad = curve_radius(left_pixel_indices, right_pixel_indices)
     source_image_with_lines, offset = plot_lines(source_image, left_fit_x, right_fit_x, ploty)
     cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
                 cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
@@ -79,9 +85,9 @@ if __name__ == '__main__':
     cv2.putText(source_image_with_lines, offset_text, (50, 100),
                 cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
                 )
-    plt.imshow(source_image_with_lines)
-    plt.imsave('./../examples/example_output.jpg', source_image_with_lines)
+    # plt.imshow(source_image_with_lines)
+    # plt.imsave('./../examples/example_output.jpg', source_image_with_lines)
     # plt.plot(left_fit_x, ploty, color='red')
     # plt.plot(right_fit_x, ploty, color='red')
     # plt.imshow(image, cmap='gray')
-    plt.show()
+    # plt.show()

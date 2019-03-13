@@ -8,7 +8,7 @@ from calibration import calibrate
 from thresholding import thresholded_binary_image
 from warper import warp_and_sharpen, rotation_matrix
 from finding_lines import find_line_pixels
-from line_fitting import fit_lines, plot_lines, curve_radius
+from line_fitting import fit_lines, plot_lines, curve_radius, check_parallel
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
@@ -19,17 +19,21 @@ def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     left_line_pixel_indexes, right_line_pixel_indexes = find_line_pixels(warped_image)
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
-    curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
-    source_image_with_lines, offset = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
-    cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
-                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
-                )
-    side = 'left' if offset < 0 else 'right'
-    offset_text = 'Vehicle is ' + str(abs(round(offset, ndigits=2))) + '(m) ' + side + ' of center'
-    cv2.putText(source_image_with_lines, offset_text, (50, 100),
-                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
-                )
-    return source_image_with_lines
+    if not check_parallel(left_fit_x, right_fit_x):
+        print('not parallel fit, need to skip')
+        # need to obtain previous state
+    else:
+        curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
+        source_image_with_lines, offset = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
+        cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                    )
+        side = 'left' if offset < 0 else 'right'
+        offset_text = 'Vehicle is ' + str(abs(round(offset, ndigits=2))) + '(m) ' + side + ' of center'
+        cv2.putText(source_image_with_lines, offset_text, (50, 100),
+                    cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                    )
+        return source_image_with_lines
 
 
 def process_video(process_image):
