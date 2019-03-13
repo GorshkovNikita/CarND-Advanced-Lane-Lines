@@ -100,17 +100,34 @@ and its warped counterpart to verify that the lines appear parallel in the warpe
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+I identified lane-line pixels in function `find_line_pixels()` in file `line_fitting.py`. Firstly, I represented image
+as `nwidnows` windows. In each window I found positions with maximum neighbouring pixels. For this I used `np.convolve()`.
+For each new window I used previously found positions as starting point.
+Then I fitted found pixels to the polynomial of second degree in file `line_fitting.py` with function `fit_lines()`,
+where I casted pixels to meters and, then, computed polynomial coefficients.
+
+Here is the result I obtained:
 
 ![alt text][image5]
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+I calculated the radius of curvature in lines 23 through 29 in my code in file `line_fitting.py`.
+This function takes as arguments left and right line pixels. Then I cast pixels to meters and compute line fit using 
+`cv2.polyfit()` function. After that, I use the formula for computing radius.
+I calculated the position of vehicle in respect to center in lines 50 through 54 in file `line_fitting.py`, where
+variable `warped` represents image with plotted lines on it. So I can find positions of these lines. Then I compute
+real position of the car (which is center of image), and ideal position (which is center between two lines). The 
+difference between these values is the offset from center.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in lines 31 through 55 in my code in `line_fitting.py` in the function `plot_lines()`. 
+For that I needed to filter out coordinates, which fall out of image after computing line coordinates. After that
+I created image only with lane-lines. Then I warped this image back to initial coordinates of source image. And finally
+overlaid this image on source image.
+
+Here is an example of my result on a test image:
 
 ![alt text][image6]
 

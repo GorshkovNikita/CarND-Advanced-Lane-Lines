@@ -8,7 +8,7 @@ from calibration import calibrate
 from thresholding import thresholded_binary_image
 from warper import warp_and_sharpen, rotation_matrix
 from finding_lines import find_line_pixels
-from line_fitting import fit_lines, plot_lines, curve_radius, offset_from_center
+from line_fitting import fit_lines, plot_lines, curve_radius
 
 
 def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
@@ -20,8 +20,7 @@ def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
     curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
-    offset = offset_from_center(warped_image.shape, left_fit, right_fit)
-    source_image_with_lines = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
+    source_image_with_lines, offset = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
     cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
                 cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
                 )
@@ -34,7 +33,7 @@ def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
 
 
 def process_video(process_image):
-    filename = 'project_video'
+    filename = 'hard_cut_project_video'
     white_output = './../output_videos/' + filename + '.mp4'
     clip = VideoFileClip('./../' + filename + '.mp4')
     white_clip = clip.fl_image(process_image)
