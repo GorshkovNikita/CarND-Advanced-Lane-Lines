@@ -9,9 +9,14 @@ from thresholding import thresholded_binary_image
 from warper import warp_and_sharpen, rotation_matrix
 from finding_lines import find_line_pixels
 from line_fitting import fit_lines, plot_lines, curve_radius, check_parallel
+from line import Line
 
 
-def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
+left_line = Line()
+right_line = Line()
+
+
+def process_frame(frame_img):
     undistorted_img = cv2.undistort(frame_img, mtx, dst)
     thresholded_binary_img = thresholded_binary_image(undistorted_img)
     m = rotation_matrix()
@@ -20,24 +25,43 @@ def process_frame(frame_img, prev_left_line=None, prev_right_line=None):
     left_fit_x, right_fit_x, ploty, left_fit, right_fit = \
         fit_lines(warped_image.shape, left_line_pixel_indexes, right_line_pixel_indexes)
     if not check_parallel(left_fit_x, right_fit_x):
-        print('not parallel fit, need to skip')
-        # need to obtain previous state
+        if left_line.last_pixels is not None:
+            left_line_pixel_indexes = left_line.last_pixels
+        if left_line.last_fit_c is not None:
+            left_fit = left_line.last_fit_c
+        if left_line.last_x is not None:
+            left_fit_x = left_line.last_x
+
+        if right_line.last_pixels is not None:
+            right_line_pixel_indexes = right_line.last_pixels
+        if right_line.last_fit_c is not None:
+            right_fit = right_line.last_fit_c
+        if right_line.last_x is not None:
+            right_fit_x = right_line.last_x
     else:
-        curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
-        source_image_with_lines, offset = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
-        cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
-                    )
-        side = 'left' if offset < 0 else 'right'
-        offset_text = 'Vehicle is ' + str(abs(round(offset, ndigits=2))) + '(m) ' + side + ' of center'
-        cv2.putText(source_image_with_lines, offset_text, (50, 100),
-                    cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
-                    )
-        return source_image_with_lines
+        left_line.last_x = left_fit_x
+        left_line.last_pixels = left_line_pixel_indexes
+        left_line.last_fit_c = left_fit
+        right_line.last_x = right_fit_x
+        right_line.last_pixels = right_line_pixel_indexes
+        right_line.last_fit_c = right_fit
+
+    curve_rad = curve_radius(left_line_pixel_indexes, right_line_pixel_indexes)
+    source_image_with_lines, offset = plot_lines(frame_img, left_fit_x, right_fit_x, ploty)
+    cv2.putText(source_image_with_lines, 'Radius of curvature = ' + str(int(curve_rad)) + '(m)', (50, 50),
+                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                )
+    side = 'left' if offset < 0 else 'right'
+    offset_text = 'Vehicle is ' + str(abs(round(offset, ndigits=2))) + '(m) ' + side + ' of center'
+    cv2.putText(source_image_with_lines, offset_text, (50, 100),
+                cv2.FONT_HERSHEY_COMPLEX, 1, [255, 255, 255]
+                )
+
+    return source_image_with_lines
 
 
 def process_video(process_image):
-    filename = 'hard_cut_project_video'
+    filename = 'project_video'
     white_output = './../output_videos/' + filename + '.mp4'
     clip = VideoFileClip('./../' + filename + '.mp4')
     white_clip = clip.fl_image(process_image)
@@ -71,8 +95,9 @@ if __name__ == '__main__':
     # out_dir = './../out_binary_images/'
     # for img_name in os.listdir(dir):
     #     print(img_name)
+    #     img_name = 'test9.jpg'
     #     img = mpimg.imread(dir + img_name)
     #     processed_frame = process_frame(img)
-    #     mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
+    #     # mpimg.imsave(out_dir + img_name, processed_frame, cmap='gray')
     #     plt.imshow(processed_frame)
     #     plt.show()

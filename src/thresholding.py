@@ -22,11 +22,20 @@ def hls_binary(image, thresh=(120, 255), axis=2):
     return binary
 
 
+def rgb_binary(image, thresh=(100, 255), axis=2):
+    # hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    channel = image[:, :, axis]
+    binary = np.zeros_like(channel, dtype=float)
+    binary[(channel > thresh[0]) & (channel <= thresh[1])] = 1
+    return binary
+
+
 def thresholded_binary_image(image):
     s_binary = hls_binary(image)
     sobel_b = sobel_binary(image)
+    rgb_b = rgb_binary(image, axis=1)
     result_binary = np.zeros_like(s_binary)
-    result_binary[(sobel_b == 1) | (s_binary == 1)] = 1
+    result_binary[(sobel_b == 1) | ((s_binary == 1) & (rgb_b == 1))] = 1
     return result_binary
 
 
@@ -36,7 +45,8 @@ if __name__ == '__main__':
     # sobel_binary = sobel_binary(img)
     # stacked_img = np.uint8(np.dstack((np.zeros_like(s_binary), s_binary, sobel_binary)) * 255)
     # plt.imshow(sobel_binary(img), cmap='gray')
-    # plt.imshow(hls_binary(img, axis=1), cmap='gray')
+    # plt.imshow(hls_binary(img, axis=2), cmap='gray')
+    # plt.imshow(rgb_binary(img, axis=1), cmap='gray')
     plt.imshow(thresholded_binary_image(img), cmap='gray')
     # plt.imshow(img)
     plt.show()

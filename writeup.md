@@ -64,13 +64,13 @@ Here is undistorted version of this image:
 
 ![alt text][image8]
 
-The code for this step is contained in line 15 of the file called `main.py`. 
+The code for this step is contained in line 20 of the file called `main.py`. 
 As you can see I use `mtx` (camera matrix) and `dst` (distortion coefficients) variables, which was obtained previously on calibration step.
 
 #### 2. Describe how (and identify where in your code) you used color transforms, gradients or other methods to create a thresholded binary image.  Provide an example of a binary image result.
 
 For this step I used a combination of color and gradient thresholds to generate a binary image. The code is contained
-in the file called `thresholding.py`. I decided to use thresholding for S axis in HLS color space and for X axis in
+in the file called `thresholding.py`. I decided to use thresholding for S axis in HLS color space, R axis in RGB color space and for X axis in
 Sobel-filtered image, because this combination detect lane line very clear.
 Here's an example of my output for this step.
 
@@ -112,7 +112,7 @@ Here is the result I obtained:
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I calculated the radius of curvature in lines 23 through 29 in my code in file `line_fitting.py`.
+I calculated the radius of curvature in lines 22 through 28 in my code in file `line_fitting.py`.
 This function takes as arguments left and right line pixels. Then I cast pixels to meters and compute line fit using 
 `cv2.polyfit()` function. After that, I use the formula for computing radius.
 I calculated the position of vehicle in respect to center in lines 50 through 54 in file `line_fitting.py`, where
@@ -122,7 +122,7 @@ difference between these values is the offset from center.
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines 31 through 55 in my code in `line_fitting.py` in the function `plot_lines()`. 
+I implemented this step in lines 31 through 58 in my code in `line_fitting.py` in the function `plot_lines()`. 
 For that I needed to filter out coordinates, which fall out of image after computing line coordinates. After that
 I created image only with lane-lines. Then I warped this image back to initial coordinates of source image. And finally
 overlaid this image on source image.
@@ -145,4 +145,8 @@ Here's a [link to my video result](./output_videos/project_video.mp4)
 
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+The main problem in this project was shadows on the road. To tackle this problem I decided to use RGB color space in
+thresholding stage of pipeline to filter out all dark pixels.
+
+Obviously, this pipeline will fail whenever it's hard to detect lines even for human (for example, when road is covered 
+by snow). In such case, we could use surrounding cars to detect lanes.

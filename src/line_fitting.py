@@ -60,7 +60,7 @@ def plot_lines(src_img, l_fit_x, r_fit_x, y):
 
 def check_parallel(left_fit_x, right_fit_x):
     diff = right_fit_x - left_fit_x
-    return abs(np.max(diff) - np.min(diff)) < 250
+    return abs(np.max(diff) - np.min(diff)) < 200
 
 
 if __name__ == '__main__':

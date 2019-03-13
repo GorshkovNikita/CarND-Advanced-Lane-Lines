@@ -7,7 +7,9 @@ class Line:
         # was the line detected in the last iteration?
         self.detected = False
         # x values of the last n fits of the line
-        self.recent_xfitted = []
+        self.last_x = None
+        self.last_pixels = None
+        self.last_fit_c = None
         # average x values of the fitted line over the last n iterations
         self.bestx = None
         # polynomial coefficients averaged over the last n iterations
